@@ -1,4 +1,4 @@
 .htaccess
 .vagrant/
 .DS_Store
-.group_vars/*
+provisioning/group_vars/all
