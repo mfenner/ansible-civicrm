@@ -1,3 +1,4 @@
 .htaccess
 .vagrant/
 .DS_Store
+.group_vars/*

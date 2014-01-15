@@ -24,18 +24,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.hostname = "civicrm"
 
-  config.vm.provider :aws do |aws, override|
-    aws.access_key_id = "EXAMPLE"
-    aws.secret_access_key = "EXAMPLE"
-    aws.keypair_name = "default"
-    aws.security_groups = ["default"]
-    aws.instance_type = 'm1.small'
-    aws.ami = "ami-e7582d8e"
-    aws.tags = { Name: 'Vagrant civicrm' }
-
-    override.ssh.username = "ubuntu"
-    override.ssh.private_key_path = "EXAMPLE_PATH"
-  end
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
@@ -49,6 +37,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision :ansible do |ansible|
     ansible.playbook = "provisioning/site.yml"
     ansible.inventory_path = "provisioning/hosts"
-    #ansible.verbose = "vv"
+    ansible.verbose = "vv"
   end
 end

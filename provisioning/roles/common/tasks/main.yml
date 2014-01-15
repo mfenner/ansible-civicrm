@@ -1,5 +1,22 @@
 ---
-- name: Common | Update apt cache
-  sudo: yes
-  apt: update-cache=yes
-  tags: common
+- name: Install required packages
+  yum: name={{ item }} state=present
+  with_items:
+   - ntp
+   - git
+   - libsemanage-python
+   - libselinux-python
+
+- name: Configure ntp file
+  template: src=ntp.conf.j2 dest=/etc/ntp.conf
+  tags: ntp
+  notify: restart ntp
+
+- name: Start the ntp service
+  service: name=ntpd state=started enabled=true
+  tags: ntp
+
+- name: test to see if selinux is running
+  command: getenforce
+  register: sestatus
+  changed_when: false

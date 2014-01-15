@@ -1,11 +1,25 @@
 ---
-- hosts: all
-  user: root
+
+- name: apply common configuration to all nodes
+  hosts: all
+  remote_user: vagrant
+  sudo: yes
 
   roles:
     - common
-    - apache
-    - mysql
-    - php
-    - wordpress
-    - civicrm
+
+- name: configure and deploy MySQL
+  hosts: dbservers
+  remote_user: vagrant
+  sudo: yes
+
+  roles:
+    - db
+
+- name: configure and deploy the webservers
+  hosts: webservers
+  remote_user: vagrant
+  sudo: yes
+
+  roles:
+    - web

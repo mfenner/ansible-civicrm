@@ -1,0 +1,38 @@
+---
+
+- name: Install http and php etc
+  yum: name={{ item }} state=present
+  with_items:
+   - httpd
+   - php
+   - php-mysql
+
+# - name: insert iptables rule for httpd
+#   lineinfile: dest=/etc/sysconfig/iptables create=yes state=present regexp="{{ httpd_port }}" insertafter="^:OUTPUT "
+#               line="-A INPUT -p tcp  --dport {{ httpd_port }} -j  ACCEPT"
+#   notify: restart iptables
+
+- name: http service state
+  service: name=httpd state=started enabled=yes
+
+- name: Configure SELinux to allow httpd to connect to remote database
+  seboolean: name=httpd_can_network_connect_db state=true persistent=yes
+  when: sestatus.rc != 0
+
+# - name: CiviCRM | Install unzip for plugin
+#   sudo: yes
+#   apt: pkg=unzip
+#   tags: civi
+
+# - name: CiviCRM | Create files directory
+#   command: chdir=/var/www/wp-content/plugins/ mkdir files
+#   tags: civi
+
+# - name: CiviCRM | Make files directory writeable
+#   command: chdir=/var/www/wp-content/plugins/ chmod 777 files
+#   tags: civi
+
+# - name: CiviCRM | Give ownership of new files to web user
+#   sudo: yes
+#   shell: chdir=/var/www/wp-content/plugins/ chown -R www-data:www-data *
+#   tags: civi
