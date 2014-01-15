@@ -23,16 +23,11 @@
 #               insertafter="^:OUTPUT " line="-A INPUT -p tcp  --dport {{ mysql_port }} -j  ACCEPT"
 #   notify: restart iptables
 
-- name: create application database
-  mysql_db: name={{ dbname }} state=present
+- name: create application databases
+  mysql_db: name={{ item }} state=present
+  with_items:
+   - "{{ drupal_db }}"
+   - "{{ civicrm_db }}"
 
 - name: create application DB user
-  mysql_user: name={{ dbuser }} password={{ upassword }} priv=*.*:ALL host='%' state=present
-
-  # - name: CiviCRM | Create the civicrm database
-#   mysql_db: login_user={{mysql_user}} login_password={{mysql_password}} name={{civicrm_database}} state=present
-#   tags: civi
-
-# - name: CiviCRM | Create civicrm database user
-#   mysql_user: login_user={{mysql_user}} login_password={{mysql_password}} name={{ civicrm_database_user }} password={{ civicrm_database_password }} priv={{ civicrm_database }}.*:ALL host='localhost' state=present
-#   tags: civi
+  mysql_user: name={{ db_user }} password={{ db_user_password }} priv=*.*:ALL host='%' state=present
