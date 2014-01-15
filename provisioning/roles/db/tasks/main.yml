@@ -1,17 +1,35 @@
 ---
 
 - name: install mysql packages
+  sudo: yes
   action: yum pkg={{ item }} state=installed
   with_items:
    - mysql-server
    - MySQL-python
 
+- name: update mysql root password for all root accounts
+  mysql_user: name=root host={{ item }} password={{ mysql_root_password }} priv=*.*:ALL,GRANT
+  with_items:
+    - localhost
+
+- name: copy .my.cnf file with root password credentials
+  template: src=.my.cnf.j2 dest=~/.my.cnf
+
 - name: create Mysql configuration file
+  sudo: yes
   action: template src=my.cnf.j2 dest=/etc/my.cnf
   notify:
   - restart mysql
 
-- name: start Mysql Service
+- name: ensure anonymous users are not in the database
+  mysql_user: name='' host={{ item }} state=absent
+  with_items:
+    - localhost
+
+- name: remove the test database
+  mysql_db: name=test state=absent
+
+- name: start mysql service
   service: name=mysqld state=started enabled=true
 
 - name: create application databases

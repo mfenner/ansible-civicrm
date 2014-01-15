@@ -11,7 +11,6 @@
 - name: configure and deploy MySQL
   hosts: dbservers
   remote_user: vagrant
-  sudo: yes
 
   roles:
     - db

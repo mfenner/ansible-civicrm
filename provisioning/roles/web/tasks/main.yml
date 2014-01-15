@@ -6,11 +6,10 @@
    - httpd
    - php
    - php-mysql
-
-# - name: insert iptables rule for httpd
-#   lineinfile: dest=/etc/sysconfig/iptables create=yes state=present regexp="{{ httpd_port }}" insertafter="^:OUTPUT "
-#               line="-A INPUT -p tcp  --dport {{ httpd_port }} -j  ACCEPT"
-#   notify: restart iptables
+   - php-pear
+   - php-mbstring
+   - php-gd
+   - php-xml
 
 - name: http service state
   service: name=httpd state=started enabled=yes
@@ -18,6 +17,25 @@
 - name: Configure SELinux to allow httpd to connect to remote database
   seboolean: name=httpd_can_network_connect_db state=true persistent=yes
   when: sestatus.rc != 0
+
+- name: discover drush
+  sudo: yes
+  command: pear channel-discover pear.drush.org
+  ignore_errors: true
+
+- name: install drush
+  sudo: yes
+  command: pear install drush/drush
+  ignore_errors: true
+
+- name: Check if drupal folder exists
+  stat: path=/vagrant/{{ drupal_db }}
+  register: check_drupal_path
+
+- name: install and configure drupal 7
+  sudo: yes
+  shell: drush -y dl drupal --destination=/vagrant --drupal-project-rename={{ drupal_db }} && drush -y site-install standard --root=/vagrant/{{ drupal_db }} --account-name=admin --account-pass=admin --site-name="{{ drupal_db }}" --db-url=mysql://{{ db_user }}:{{ db_user_password }}@localhost/{{ drupal_db }}
+  when: check_drupal_path.stat.exists == false
 
 # - name: CiviCRM | Install unzip for plugin
 #   sudo: yes
