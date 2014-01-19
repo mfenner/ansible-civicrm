@@ -1,4 +1,4 @@
 .htaccess
 .vagrant/
 .DS_Store
-provisioning/group_vars/all
+ansible/group_vars/all

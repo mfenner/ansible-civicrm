@@ -35,8 +35,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network :private_network, ip: "33.33.33.111"
 
   config.vm.provision :ansible do |ansible|
-    ansible.playbook = "provisioning/site.yml"
-    ansible.inventory_path = "provisioning/hosts"
+    ansible.playbook = "ansible/site.yml"
+    ansible.inventory_path = "ansible/hosts"
     ansible.verbose = "v"
   end
 end
