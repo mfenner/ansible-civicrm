@@ -1,6 +1,6 @@
 ---
 
-- name: Install http and php etc
+- name: install apache and php modules
   yum: name={{ item }} state=present
   with_items:
    - httpd
@@ -14,28 +14,37 @@
 - name: http service state
   service: name=httpd state=started enabled=yes
 
-- name: Configure SELinux to allow httpd to connect to remote database
+- name: configure SELinux to allow httpd to connect to remote database
   seboolean: name=httpd_can_network_connect_db state=true persistent=yes
   when: sestatus.rc != 0
 
-- name: discover drush
+- name: discover drush pear channel
   sudo: yes
-  command: pear channel-discover pear.drush.org
-  ignore_errors: true
+  command: pear channel-discover {{ item }} creates=/usr/share/pear/.channels/{{ item }}.reg
+  with_items:
+   - pear.drush.org
 
-- name: install drush
+- name: update drush pear channel
   sudo: yes
-  command: pear install drush/drush
-  ignore_errors: true
+  command: pear channel-update {{ item }}
+  register: out
+  changed_when: "out.stdout.endswith('succeeded')"
+  with_items:
+   - pear.drush.org
 
-- name: Check if drupal folder exists
-  stat: path=/vagrant/{{ drupal_db }}
-  register: check_drupal_path
-
-- name: install and configure drupal 7
+- name: install/upgrade drush
   sudo: yes
-  shell: drush -y dl drupal --destination=/vagrant --drupal-project-rename={{ drupal_db }} && drush -y site-install standard --root=/vagrant/{{ drupal_db }} --account-name=admin --account-pass=admin --site-name="{{ drupal_db }}" --db-url=mysql://{{ db_user }}:{{ db_user_password }}@localhost/{{ drupal_db }}
-  when: check_drupal_path.stat.exists == false
+  command: pear upgrade drush/drush
+  register: out
+  changed_when: "'upgrade ok' in out.stdout"
+
+- name: install drupal
+  sudo: yes
+  command: drush -y dl drupal --destination=/vagrant --drupal-project-rename={{ drupal_db }} creates=/vagrant/{{ drupal_db }}
+
+- name: configure drupal
+  sudo: yes
+  command: drush -y site-install standard --root=/vagrant/{{ drupal_db }} --account-name=admin --account-pass=admin --site-name="{{ drupal_db }}" --db-url=mysql://{{ db_user }}:{{ db_user_password }}@localhost/{{ drupal_db }} creates=/vagrant/{{ drupal_db }}/sites/all/modules/user
 
 # - name: CiviCRM | Install unzip for plugin
 #   sudo: yes
